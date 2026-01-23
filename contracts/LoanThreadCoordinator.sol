@@ -2,15 +2,23 @@
 pragma solidity ^0.8.0;
 
 contract CommunicationsTool {
-    // Structure to store messages
-    struct Message {
+    // Structure to store thread actions
+    struct ThreadAction {
         address sender;
-        string content;
+        bytes32 threadId;
+        MessageType messageType;
+        string ciphertextURI;  // IPFS/Arweave/HTTPS location
+        bytes32 payloadHash;   // keccak256(ciphertext or canonical JSON)
+        bytes32 iexecInputHash; // optional, for RISK_RESULT
+        bytes32 aleoProofHash;  // optional, for PROOF
+        bytes32 policyHash;     // optional, for policy verification
+        uint256 sequenceNumber; // strict ordering per thread
         uint256 timestamp;
     }
 
-    // Mapping to store messages for each chat room
-    mapping(string => Message[]) private chatRooms;
+    // Mapping to store thread actions for each thread
+    mapping(bytes32 => ThreadAction[]) public threadActions;
+    
 
     // Access control mapping (address => role)
     mapping(address => string) public roles;
@@ -27,23 +35,10 @@ contract CommunicationsTool {
         _;
     }
 
-    // Function to send a message to a chat room
-    function sendMessage(string memory chatRoomId, string memory content) public {
-        Message memory newMessage = Message({
-            sender: msg.sender,
-            content: content,
-            timestamp: block.timestamp
-        });
-
-        chatRooms[chatRoomId].push(newMessage);
-
-        emit MessageSent(chatRoomId, msg.sender, content, block.timestamp);
-    }
+    // Function to send a message to a chat room 
 
     // Function to retrieve messages from a chat room
-    function getMessages(string memory chatRoomId) public view returns (Message[] memory) {
-        return chatRooms[chatRoomId];
-    }
+
 
     // Function to set user roles (admin function)
     function setUserRole(address user, string memory role) public onlyRole("admin") {
