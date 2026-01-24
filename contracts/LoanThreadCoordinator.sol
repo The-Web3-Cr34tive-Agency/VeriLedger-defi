@@ -27,21 +27,19 @@ contract CommunicationsTool {
     // Mapping to track sequence numbers for strict ordering per thread
     mapping(bytes32 => uint256) public sequenceNumbers; // sequence number for each thread
 
-    // Function to send a message to a chat room 
-    function sendMessage(bytes32 threadId, MessageType messageType, string memory ciphertextURI) public {
-        ThreadAction memory newAction = ThreadAction({
+    // Constructor to initialize user roles (admin function)
+    address public admin;
+    constructor() {
+        admin = msg.sender;
+        roles[msg.sender] = "admin";
+    }
+
+    // Function to create a new thread
+    function createThread(bytes32 threadId) public {
+        threadActions[threadId].push(ThreadAction({
             sender: msg.sender,
             threadId: threadId,
-            messageType: messageType,
-            ciphertextURI: ciphertextURI,
-            sequenceNumber: sequenceNumbers[threadId],
-            timestamp: block.timestamp
-        });
-    }
-    // Function to collect and share findings (basic implementation)
-    function shareFindings(string memory data) public {
-        // In a more advanced implementation, this function would interact with other storage
-        // and smart contract systems to collect, organize, and share findings.
-        emit MessageSent("findings", msg.sender, data, block.timestamp);
-    }
+            messageType: MessageType.REQUEST,
+            ciphertextURI: "",
+            sequenceNumber: 0,
 }
