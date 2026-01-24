@@ -36,83 +36,123 @@ contract CommunicationsTool {
         roles[msg.sender] = "admin";
     }
 
+    // ============================ Access Control Modifiers ============================
+
+    // Modifier to check user role
+    modifier onlyAdmin() {
+        require(roles[msg.sender] == "admin", "Only admin can call this function");
+        _;
+    }
+}
+    // Come back to this for more flexibility in access control
+    // Modifier to check to allow admin OR a specific user role
+    modifier onlyAdminOrUser(string memory role) {
+        require(roles[msg.sender] == "admin" || roles[msg.sender] == role, "Only admin or user with role can call this function");
+        require(roles[msg.sender] == "admin" || roles[msg.sender] == role, "Only admin or user with role can call this function");
+        _;
+    }
+
+    // ============================ Events (immutable audit trail) ============================
+
+    event ThreadCreated(bytes32 indexed threadId, address indexed sender, uint256 sequenceNumber, timestamp);
+    event RiskEvaluationRequested(bytes32 indexed threadId, address indexed sender, uint256 sequenceNumber, timestamp);
+    event RiskEvaluationReceived(bytes32 indexed threadId, address indexed sender, uint256 sequenceNumber, timestamp);
+    event ProofSent(bytes32 indexed threadId, address indexed sender, uint256 sequenceNumber, timestamp);
+    event ApprovalReceived(bytes32 indexed threadId, address indexed sender, uint256 sequenceNumber, timestamp);
+    event RejectionReceived(bytes32 indexed threadId, address indexed sender, uint256 sequenceNumber, timestamp);
+
+    // ============================ Functions ============================
+
     // Function to create a new thread
     function createThread(bytes32 threadId) public {
+        uint256 currentSequenceNumber = 0;
         threadActions[threadId].push(ThreadAction({
             sender: msg.sender,
             threadId: threadId,
             messageType: MessageType.REQUEST,
             ciphertextURI: "",
-            sequenceNumber: 0, // initial sequence number for the thread
+            sequenceNumber: currentSequenceNumber, // initial sequence number for the thread
             timestamp: block.timestamp
         }));
         sequenceNumbers[threadId] = 1; // increment sequence number for the thread
+        emit ThreadCreated(threadId, msg.sender, sequenceNumbers[threadId], block.timestamp);
     }
 
     // Function to send a message to a thread
     function requestRiskEvaluation(bytes32 threadId) public {
+        uint256 currentSequenceNumber = sequenceNumbers[threadId];
         threadActions[threadId].push(ThreadAction({
             sender: msg.sender,
             threadId: threadId,
             messageType: MessageType.RISK_REQUESTED,
             ciphertextURI: "",
-            sequenceNumber: sequenceNumbers[threadId],
+            sequenceNumber: currentSequenceNumber,
             timestamp: block.timestamp
         }));
         sequenceNumbers[threadId]++;
+        emit RiskEvaluationRequested(threadId, msg.sender, currentSequenceNumber, block.timestamp);
     }
 
     // Function to receive a message from a thread
     function receiveRiskEvaluation(bytes32 threadId) public {
+        uint256 currentSequenceNumber = sequenceNumbers[threadId];
         threadActions[threadId].push(ThreadAction({
             sender: msg.sender,
             threadId: threadId,
             messageType: MessageType.RISK_EVALUATED,
             ciphertextURI: "",
-            sequenceNumber: sequenceNumbers[threadId],
+            sequenceNumber: currentSequenceNumber,
             timestamp: block.timestamp
         }));
         sequenceNumbers[threadId]++;
+        emit RiskEvaluationReceived(threadId, msg.sender, sequenceNumbers[threadId], block.timestamp);
     }
 
     // Function to send a proof to a thread for risk evaluation
     function sendProof(bytes32 threadId) public {
+        uint256 currentSequenceNumber = sequenceNumbers[threadId];
         threadActions[threadId].push(ThreadAction({
             sender: msg.sender,
             threadId: threadId,
             messageType: MessageType.PROOF,
             ciphertextURI: "",
-            sequenceNumber: sequenceNumbers[threadId],
+            sequenceNumber: currentSequenceNumber,
             timestamp: block.timestamp
         }));
+        sequenceNumbers[threadId]++;
+        emit ProofSent(threadId, msg.sender, currentSequenceNumber, block.timestamp);
 
     // Function to receive approval for the loan
     function approveLoan(bytes32 threadId) public {
+        uint256 currentSequenceNumber = sequenceNumbers[threadId];
         threadActions[threadId].push(ThreadAction({
             sender: msg.sender,
             threadId: threadId,
             messageType: MessageType.APPROVAL,
             ciphertextURI: "",
-            sequenceNumber: sequenceNumbers[threadId],
+            sequenceNumber: currentSequenceNumber,
             timestamp: block.timestamp
         }));
         sequenceNumbers[threadId]++;
+        emit ApprovalReceived(threadId, msg.sender, currentSequenceNumber, block.timestamp);
     }
 
     // Function to reject the loan
     function rejectLoan(bytes32 threadId) public {
+        uint256 currentSequenceNumber = sequenceNumbers[threadId];
         threadActions[threadId].push(ThreadAction({
             sender: msg.sender,
             threadId: threadId,
             messageType: MessageType.REJECTION,
             ciphertextURI: "",
-            sequenceNumber: sequenceNumbers[threadId],
+            sequenceNumber: currentSequenceNumber,
             timestamp: block.timestamp
         }));
         sequenceNumbers[threadId]++;
+        emit RejectionReceived(threadId, msg.sender, currentSequenceNumber, block.timestamp);
     }
 
     // Function to get the thread actions for a thread
     function getThreadActions(bytes32 threadId) public view returns (ThreadAction[] memory) {
         return threadActions[threadId];
-}
+    }   
