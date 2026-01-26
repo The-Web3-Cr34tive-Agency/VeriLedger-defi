@@ -121,6 +121,22 @@ contract CommunicationsTool {
         }));
         sequenceNumbers[threadId]++;
         emit ProofSent(threadId, msg.sender, currentSequenceNumber, block.timestamp);
+    }
+    
+    // Function for the iExec worker to call with the result of the risk evaluation
+    function receiveRiskEvaluationResult(bytes32 threadId, bool result) public {
+        uint256 currentSequenceNumber = sequenceNumbers[threadId];
+        threadActions[threadId].push(ThreadAction({
+            sender: msg.sender,
+            threadId: threadId,
+            messageType: MessageType.RISK_RESULT,
+            ciphertextURI: "",
+            sequenceNumber: currentSequenceNumber,
+            timestamp: block.timestamp
+        }));
+        sequenceNumbers[threadId]++;
+        emit RiskEvaluationResultReceived(threadId, msg.sender, currentSequenceNumber, block.timestamp);
+    }
 
     // Function to receive approval for the loan
     function approveLoan(bytes32 threadId) public {
