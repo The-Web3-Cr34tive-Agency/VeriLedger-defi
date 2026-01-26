@@ -1,4 +1,4 @@
-// The 'lending_policy' program.
+// The 'lending_policy' program 
 program lending_policy.aleo {
  // Struct for input data
     struct PolicyInput {
