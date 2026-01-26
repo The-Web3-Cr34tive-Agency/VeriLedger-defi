@@ -1,4 +1,4 @@
-program lending_policy.leo {
+program lending_policy.aleo {
     // Public and Private state 
     // Struct for input data
     struct PolicyInput {
