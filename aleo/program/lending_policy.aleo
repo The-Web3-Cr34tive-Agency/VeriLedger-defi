@@ -12,8 +12,14 @@ program lending_policy.aleo {
         policy_id: u64,
     }
 
+    @noupgrade
+    async constructor() {
+        // Leo generates the constructor logic; program is non-upgradable.
+    }
+
     // Public mapping to store the last approval result per policy id
     mapping latest_approval: u64 => bool;
+
 
     // Transition function for evaluating the lending policy
     transition evaluate_policy(

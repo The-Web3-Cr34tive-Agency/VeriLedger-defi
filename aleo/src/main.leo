@@ -12,6 +12,14 @@ program lending_policy.aleo {
         policy_id: u64,
     }
 
+    @noupgrade
+    async constructor() {
+        // Leo generates the constructor logic; program is non-upgradable.
+    }
+
+   transition make_policy_input(public risk_score: u8, public collateral_ratio: u64) -> PolicyInput {
+       return PolicyInput { risk_score, collateral_ratio };
+   }
 
     // Transition function for evaluating the lending policy
     transition evaluate_policy(
