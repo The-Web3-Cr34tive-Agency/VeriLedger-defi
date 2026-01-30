@@ -1,4 +1,4 @@
-program lending_policy.aleo;
+program lending_policy_ejones_v1.aleo;
 
 struct PolicyInput:
     risk_score as u8;

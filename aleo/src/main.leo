@@ -1,5 +1,5 @@
 // The 'lending_policy' program 
-program lending_policy.aleo {
+program lending_policy_ejones_v1.aleo {
  // Struct for input data
     struct PolicyInput {
         risk_score: u8,
